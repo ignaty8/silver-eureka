@@ -22,22 +22,28 @@ typedef e_TaskType TaskType;
 class TaskHandler {
 
 public:
-    TaskHandler(int x, int y) : x(x), y(y) {}
+    TaskHandler(int x, int y, std::string name) : x(x), y(y), name(name) {}
 
     //TaskType type;
     virtual int execute() = 0;
     //virtual ~TaskHandler() = 0;
+    friend std::ostream& operator<<(std::ostream& os, const TaskHandler& taskHandler)
+    {
+        os << taskHandler.name << ": " << taskHandler.x << ", " << taskHandler.y;
+        return os;
+    }
 
 protected:
     
     int x, y;
+    const std::string name;
 
 };
 
 class TaskAdd : public TaskHandler {
 
 public:
-    TaskAdd(int x, int y) : TaskHandler(x,y) {};
+    TaskAdd(int x, int y, std::string name) : TaskHandler(x,y,name) {};
 
     int execute()
     {
@@ -48,7 +54,7 @@ public:
 class TaskSub : public TaskHandler {
 
 public:
-    TaskSub(int x, int y) : TaskHandler(x,y) {};
+    TaskSub(int x, int y, std::string name) : TaskHandler(x,y,name) {};
     virtual int execute()
     {
         return x - y;
@@ -58,7 +64,7 @@ public:
 class TaskMul : public TaskHandler {
 
 public:
-    TaskMul(int x, int y) : TaskHandler(x,y) {};
+    TaskMul(int x, int y, std::string name) : TaskHandler(x,y,name) {};
     virtual int execute()
     {
         return x * y;
@@ -68,9 +74,11 @@ public:
 class TaskDiv : public TaskHandler {
 
 public:
-    TaskDiv(int x, int y) : TaskHandler(x,y) {};
+    TaskDiv(int x, int y, std::string name) : TaskHandler(x,y,name) {};
     virtual int execute()
     {
+        if (!y)
+            throw std::invalid_argument("Division by zero!");
         return x / y;
     }
 };
@@ -80,10 +88,10 @@ std::unique_ptr<TaskHandler> taskHandlerCreate(std::string taskName, int x, int 
     // TODO: While a map from string to type would work better,
     // I cannot currently figure out how to make that work.
     
-    if (taskName == "ADD") return std::make_unique<TaskAdd>(x,y);
-    if (taskName == "SUB") return std::make_unique<TaskSub>(x,y);
-    if (taskName == "MUL") return std::make_unique<TaskMul>(x,y);
-    if (taskName == "DIV") return std::make_unique<TaskDiv>(x,y);
+    if (taskName == "ADD") return std::make_unique<TaskAdd>(x,y,taskName);
+    if (taskName == "SUB") return std::make_unique<TaskSub>(x,y,taskName);
+    if (taskName == "MUL") return std::make_unique<TaskMul>(x,y,taskName);
+    if (taskName == "DIV") return std::make_unique<TaskDiv>(x,y,taskName);
     return std::unique_ptr<TaskHandler>(nullptr);
 }
 
@@ -122,8 +130,21 @@ int main()
     
     while(!taskQueue.empty())
     {
-        std::cout << taskQueue.front()->execute() << ", ";
+        int result;
+        try
+        {
+            result = taskQueue.front()->execute();
+            std::cout << result;
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << "Exception while processing task \"" << *(taskQueue.front().get()) << "\"\n" << e.what();
+        }
+        
         taskQueue.pop();
+        
+        if(!taskQueue.empty())
+            std::cout << ", ";
     }
     return 0;
 }
