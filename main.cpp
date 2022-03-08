@@ -102,32 +102,35 @@ std::queue<std::unique_ptr<TaskHandler>> loadTasks(std::string filename)
     }
     catch(const std::exception& e)
     {
-        std::cerr << "Error processing input JSON file:\n" << e.what() << '\n';
+        std::cerr << "Error processing input JSON file: \"" << filename << "\"\n" << e.what() << '\n';
         exit(1);
     }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-    auto taskQueue = loadTasks("tasks.json");
-    
-    while(!taskQueue.empty())
+    for(int k = 1; k < argc; k++)
     {
-        int result;
-        try
-        {
-            result = taskQueue.front()->execute();
-            std::cout << result;
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << "Exception while processing task \"" << *(taskQueue.front().get()) << "\"\n" << e.what();
-        }
+        auto taskQueue = loadTasks(argv[k]);
         
-        taskQueue.pop();
-        
-        if(!taskQueue.empty())
-            std::cout << ", ";
+        while(!taskQueue.empty())
+        {
+            int result;
+            try
+            {
+                result = taskQueue.front()->execute();
+                std::cout << result;
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << "Exception while processing task \"" << *(taskQueue.front().get()) << "\"\n" << e.what();
+            }
+            
+            taskQueue.pop();
+            
+            if(!taskQueue.empty())
+                std::cout << ", ";
+        }
     }
     return 0;
 }
