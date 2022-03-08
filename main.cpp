@@ -5,6 +5,7 @@
 #include <typeindex>
 #include <memory>
 #include <iostream>
+#include <stdexcept>
 #include <json.hpp>
 
 enum e_TaskType {
@@ -78,7 +79,6 @@ std::unique_ptr<TaskHandler> taskHandlerCreate(std::string taskName, int x, int 
 {
     // TODO: While a map from string to type would work better,
     // I cannot currently figure out how to make that work.
-    //TaskAdd taskAdd = TaskAdd(x,y);
     
     if (taskName == "ADD") return std::make_unique<TaskAdd>(x,y);
     if (taskName == "SUB") return std::make_unique<TaskSub>(x,y);
@@ -89,19 +89,31 @@ std::unique_ptr<TaskHandler> taskHandlerCreate(std::string taskName, int x, int 
 
 std::queue<std::unique_ptr<TaskHandler>> loadTasks(std::string filename)
 {
-    std::ifstream jsonFile(filename);
-    auto json = nlohmann::json::parse(jsonFile);
-    std::queue<std::unique_ptr<TaskHandler>> taskQueue;
 
-    for(const auto& taskJson: json["tasks"])
+    try
     {
-        std::string taskTypeStr = taskJson["type"];
-        int taskX = taskJson["num1"];
-        int taskY = taskJson["num2"];
-        taskQueue.push(taskHandlerCreate(taskTypeStr, taskX, taskY));
+        std::ifstream jsonFile(filename);
+        auto json = nlohmann::json::parse(jsonFile);
+        std::queue<std::unique_ptr<TaskHandler>> taskQueue;
+        for(const auto& taskJson: json["tasks"])
+        {
+            std::string taskTypeStr = taskJson["type"];
+            int taskX = taskJson["num1"];
+            int taskY = taskJson["num2"];
+            std::unique_ptr<TaskHandler> taskHandler = taskHandlerCreate(taskTypeStr, taskX, taskY);
+            if (taskHandler == nullptr)
+                throw std::invalid_argument(std::string("Invalid task definition in: ") + std::string(taskJson.dump()));
+            taskQueue.push(std::move(taskHandler));
+        }    
+          
+        return taskQueue;
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "Error processing input JSON file:\n" << e.what() << '\n';
+        exit(1);
     }
     
-    return taskQueue;
 }
 
 int main()
