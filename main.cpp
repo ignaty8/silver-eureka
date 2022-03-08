@@ -1,32 +1,18 @@
 #include <queue>
 #include <string>
 #include <fstream>
-#include <map>
-#include <typeindex>
 #include <memory>
 #include <iostream>
 #include <stdexcept>
 #include <json.hpp>
-
-enum e_TaskType {
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    TASK_MAX
-};
-
-
-typedef e_TaskType TaskType;
 
 class TaskHandler {
 
 public:
     TaskHandler(int x, int y, std::string name) : x(x), y(y), name(name) {}
 
-    //TaskType type;
     virtual int execute() = 0;
-    //virtual ~TaskHandler() = 0;
+    
     friend std::ostream& operator<<(std::ostream& os, const TaskHandler& taskHandler)
     {
         os << taskHandler.name << ": " << taskHandler.x << ", " << taskHandler.y;
@@ -44,8 +30,7 @@ class TaskAdd : public TaskHandler {
 
 public:
     TaskAdd(int x, int y, std::string name) : TaskHandler(x,y,name) {};
-
-    int execute()
+    virtual int execute()
     {
         return x + y;
     }
@@ -97,7 +82,6 @@ std::unique_ptr<TaskHandler> taskHandlerCreate(std::string taskName, int x, int 
 
 std::queue<std::unique_ptr<TaskHandler>> loadTasks(std::string filename)
 {
-
     try
     {
         std::ifstream jsonFile(filename);
@@ -121,7 +105,6 @@ std::queue<std::unique_ptr<TaskHandler>> loadTasks(std::string filename)
         std::cerr << "Error processing input JSON file:\n" << e.what() << '\n';
         exit(1);
     }
-    
 }
 
 int main()
