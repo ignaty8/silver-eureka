@@ -33,7 +33,7 @@ This repository contains a code sample able to process simple tasks in the follo
 
 ## Dependencies
 Please insure you have a recent version of CMake (3.10 or higher) and a C++ compiler appropriate for your platform (C++14 or higher).
-The source code relies on [Niels Lohmann's excellent JSON library](https://github.com/nlohmann/json). If you don't want to isntall it, you can just drop the source `json.hpp` file next to `main.cpp` and modify the relevant `#include` line accordingly.
+The source code relies on [Niels Lohmann's excellent JSON library](https://github.com/nlohmann/json). If you don't want to install it, you can just drop the source `json.hpp` file next to `main.cpp` and modify the relevant `#include` line accordingly.
 
 ## Installation
 

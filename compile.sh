@@ -1,5 +1,9 @@
 #!/bin/sh
-mkdir build
-cd build
-cmake ..
-cmake -build .
+if [ ! -d "build" ]; then
+  mkdir build
+  cd build
+  cmake ..
+else
+  cd build
+fi
+cmake --build .

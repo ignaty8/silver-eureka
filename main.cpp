@@ -161,6 +161,7 @@ int main(int argc, char* argv[])
             if(!taskQueue.empty())
                 std::cout << ", ";
         }
+        std::cout << '\n';
     }
     return 0;
 }
